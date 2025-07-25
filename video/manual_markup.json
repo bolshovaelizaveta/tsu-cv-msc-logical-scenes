@@ -1,0 +1,109 @@
+[
+    {
+        "file_name": "catch_me.mp4",
+        "movie_name": "Поймай меня, если сможешь",
+        "year": "2002",
+        "director" : "Стивен Спилберг",
+        "scenes": {
+            "scene_1":[1, 7],
+            "scene_2":[8, 16],
+            "scene_3":[17, 20],
+            "scene_4":[21, 27],
+            "scene_5":[28, 31],
+            "scene_6":[32, 33]
+       }
+    },
+    {
+        "file_name": "hand.mp4",
+        "movie_name": "Бриллиантовая рука",
+        "year": "1968",
+        "director" : "Леонид Гайдай",
+        "scenes": {
+            "scene_1":[1, 1],
+            "scene_2":[2, 4],
+            "scene_3":[5, 5],
+            "scene_4":[6, 6],
+            "scene_5":[7, 7],
+            "scene_6":[8, 12],
+            "scene_7":[13, 17],
+            "scene_8":[18, 40],
+            "scene_9":[41, 44],
+            "scene_10":[45, 45],
+            "scene_11":[46, 46],
+            "scene_12":[47, 50]
+       }
+    },
+    {
+        "file_name": "sheldon.mp4",
+        "movie_name": "Детство Шелдона",
+        "year": "2017-2024",
+        "director" : "Алекс Рейд",
+        "scenes": {
+            "scene_1":[1, 8],
+            "scene_2":[9, 21],
+            "scene_3":[22, 30],
+            "scene_4":[31, 36]
+       }
+    },
+    {
+        "file_name": "three_heroes.mp4",
+        "movie_name": "Три богатыря и Шамаханская царица",
+        "year": "2010",
+        "director" : "Сергей Глезин",
+        "scenes": {
+            "scene_1":[1, 13],
+            "scene_2":[14, 19],
+            "scene_3":[20, 22],
+            "scene_4":[23, 30],
+            "scene_5":[31, 32]
+       }
+    },
+    {
+        "file_name": "tver.mp4",
+        "movie_name": "Постучись в мою Тверь",
+        "year": "2024",
+        "director" : "",
+        "scenes": {
+            "scene_1":[1, 3],
+            "scene_2":[4, 18],
+            "scene_3":[19, 19],
+            "scene_4":[20, 21],
+            "scene_5":[22, 34],
+            "scene_6":[35, 36]
+       }
+    },
+    {
+        "file_name": "clock_mini.mp4",
+        "movie_name": "Тайна волшебных часов",
+        "year": "2020",
+        "director" : "Деннис Ботс",
+        "scenes": {
+            "scene_1":[1, 38],
+            "scene_2":[39, 63],
+            "scene_3":[64, 115],
+            "scene_4":[116, 123],
+            "scene_5":[124, 131],
+            "scene_6":[132, 139],
+            "scene_7":[140, 146],
+            "scene_8":[147, 161],
+            "scene_9":[162, 166]
+       }
+    },
+    {
+        "file_name": "clock_hour.mp4",
+        "movie_name": "Тайна волшебных часов",
+        "year": "2020",
+        "director" : "Деннис Ботс",
+        "scenes": {
+            "scene_1":[0, 0],
+            "scene_2":[0, 0],
+            "scene_3":[0, 0],
+            "scene_4":[0, 0],
+            "scene_5":[0, 0],
+            "scene_6":[0, 0],
+            "scene_7":[0, 0],
+            "scene_8":[0, 0],
+            "scene_9":[0, 0]
+       }
+    }
+]

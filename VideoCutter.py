@@ -28,17 +28,8 @@ class VideoCutter:
         scene_manager = SceneManager(stats_manager=stats_manager)
 
         # Добавляем нужные детекторы с параметрами
-        scene_manager.add_detector(ContentDetector(
-            threshold=60.0, 
-            min_scene_len=120
-        ))
-        scene_manager.add_detector(AdaptiveDetector(
-            adaptive_threshold=4,
-            min_scene_len=65,
-            window_width=5,
-            min_content_val=30,
-            luma_only=False
-        ))
+        scene_manager.add_detector(ContentDetector())
+        scene_manager.add_detector(AdaptiveDetector())
         
         # Запускаем детекцию шотов с прогрессом
         scene_manager.detect_scenes(video, show_progress=True)

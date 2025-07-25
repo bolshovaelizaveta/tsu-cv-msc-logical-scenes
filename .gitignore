@@ -2,3 +2,4 @@
 shots_*/
 video/*.mp4
 __pycache__/
+Video_cutter_cpu.py
