@@ -70,7 +70,3 @@ class HistogramSceneAnalyzer:
                 continuation_probabilities.append(0.5) # Если данных нет, даем нейтральную оценку
 
         return np.array(continuation_probabilities)
-
-
-
-

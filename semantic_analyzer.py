@@ -117,7 +117,3 @@ class SemanticSceneAnalyzer:
             scenes.append(scene_shots)
             
         return scenes
-
-
-
-
