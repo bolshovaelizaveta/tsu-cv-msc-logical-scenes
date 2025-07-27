@@ -4,7 +4,8 @@ import time
 
 from imageio_ffmpeg import get_ffmpeg_exe
 from VideoCutter import VideoCutter
-from semantic_analyzer import SemanticSceneAnalyzer
+from semantic_analyzer import SemanticSceneAnalyzer # Кластеризация + скользящее окно
+from histogram_analyzer import HistogramSceneAnalyzer # Гистограмма
 
 def main():
     parser = argparse.ArgumentParser(description="Разделение видео на логически завершенные сцены")
@@ -51,6 +52,24 @@ def main():
     
     duration = time.time() - start_time
     print(f"Время выполнения семантического анализа: {duration:.2f} секунд")
+
+    # Анализ по гистограммам 
+    print("\n--- Анализ по цветовым гистограммам ---")
+    start_time = time.time()
+    
+    hist_analyzer = HistogramSceneAnalyzer(similarity_threshold=0.7) 
+    
+    hist_probabilities = hist_analyzer.analyze_shots(shots_dir)
+    
+    if hist_probabilities.size > 0:
+        print("Вероятности продолжения сцены для каждой границы:")
+        for i, prob in enumerate(hist_probabilities):
+            print(f"  Граница {i+1}-{i+2}: {prob:.2f}")
+    else:
+        print("Не удалось получить оценки по гистограммам.")
+    
+    duration = time.time() - start_time
+    print(f"Время выполнения анализа по гистограммам: {duration:.2f} секунд")
 
 
     # Здесь в будущем будут остальные этапы
