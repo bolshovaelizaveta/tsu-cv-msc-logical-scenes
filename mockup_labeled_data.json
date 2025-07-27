@@ -1,0 +1,90 @@
+[
+    {
+        "file_name": "clock_mini_ideal.mp4",
+        "movie_name": "Тайна волшебных часов",
+        "year": "2020",
+        "director" : "Деннис Ботс",
+        "scenes": {
+            "scene_1":[1, 38],
+            "scene_2":[39, 63],
+            "scene_3":[64, 115],
+            "scene_4":[116, 123],
+            "scene_5":[124, 131],
+            "scene_6":[132, 139],
+            "scene_7":[140, 146],
+            "scene_8":[147, 161],
+            "scene_9":[162, 166]
+       }
+    },
+    {
+        "file_name": "clock_mini_one_scene.mp4",
+        "movie_name": "Тайна волшебных часов",
+        "year": "2020",
+        "director" : "Деннис Ботс",
+        "scenes": {
+            "scene_1":[1, 166]
+       }
+    },
+    {
+        "file_name": "clock_mini_too_often.mp4",
+        "movie_name": "Тайна волшебных часов",
+        "year": "2020",
+        "director" : "Деннис Ботс",
+        "scenes": {
+            "scene_1":[1, 3],
+            "scene_2":[4, 6],
+            "scene_3":[7, 17],
+            "scene_4":[18, 18],
+            "scene_5":[19, 19],
+            "scene_6":[20, 24],
+            "scene_7":[25, 35],
+            "scene_8":[36, 38],
+            "scene_9":[39, 43],
+            "scene_10":[44, 45],
+            "scene_11":[46, 54],
+            "scene_12":[55, 64],
+            "scene_13":[65, 69],
+            "scene_14":[70, 96],
+            "scene_15":[97, 97],
+            "scene_16":[98, 113],
+            "scene_17":[114, 114],
+            "scene_18":[115, 115],
+            "scene_19":[116, 124],
+            "scene_20":[125, 127],
+            "scene_21":[128, 147],
+            "scene_22":[148, 153],
+            "scene_23":[154, 154],
+            "scene_24":[155, 160],
+            "scene_25":[161, 166]            
+       }
+    },
+    {
+        "file_name": "clock_mini_too_rare.mp4",
+        "movie_name": "Тайна волшебных часов",
+        "year": "2020",
+        "director" : "Деннис Ботс",
+        "scenes": {
+            "scene_1":[1, 40],
+            "scene_2":[41, 120],
+            "scene_3":[121, 131],
+            "scene_4":[132, 155],
+            "scene_5":[155, 166]
+       }
+    },
+    {
+        "file_name": "clock_mini_intersect.mp4",
+        "movie_name": "Тайна волшебных часов",
+        "year": "2020",
+        "director" : "Деннис Ботс",
+        "scenes": {
+            "scene_1":[1, 42],
+            "scene_2":[43, 59],
+            "scene_3":[59, 120],
+            "scene_4":[121, 130],
+            "scene_5":[131, 142],
+            "scene_6":[143, 145],
+            "scene_7":[146, 163],
+            "scene_8":[164, 166]
+       }
+    }
+]
