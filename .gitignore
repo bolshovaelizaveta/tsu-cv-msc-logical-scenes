@@ -3,8 +3,5 @@
 shots_*/
 video/*.mp4
 __pycache__/
-Video_cutter_cpu.py
-metric_calculator.py
 .gitignore
-mockup_labeLed_data.json
 .vs/ # Visual Studio
