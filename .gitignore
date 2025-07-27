@@ -4,6 +4,7 @@ shots_*/
 video/*.mp4
 video/*.wav
 .DS_Store
+audio_scenes_catch_me/
 audio_scenes_output/*.mp4
 __pycache__/
 Video_cutter_cpu.py
