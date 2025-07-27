@@ -7,6 +7,15 @@ from VideoCutter import VideoCutter # Нарезка
 from semantic_analyzer import SemanticSceneAnalyzer # Кластеризация + скользящее окно
 from histogram_analyzer import HistogramSceneAnalyzer # Гистограмма
 
+from pathlib import Path
+import sys
+
+# Добавляем корень проекта в PYTHONPATH
+root_dir = Path(__file__).parent   # папка, где лежит example_yolo_deepsort.py
+sys.path.append(str(root_dir))
+
+from src.shot_aggregator import ShotAggregator
+
 def main():
     parser = argparse.ArgumentParser(description="Разделение видео на логически завершенные сцены")
     parser.add_argument('--video', type=str, help= "Путь к входному файлу с видео (формат видео .mp4)")
@@ -61,38 +70,55 @@ def main():
     ### Анализ сцен
     ### --------------------
 
-    # Семантический анализ сцен 
+    # Семантический анализ сцен
     print("\n--- Семантический анализ сцен (модель CLIP) ---")
     start_time = time.time()
     analyzer = SemanticSceneAnalyzer()
     logical_scenes = analyzer.analyze_shots(shots_dir)
-    
+
     if logical_scenes:
         for i, scene in enumerate(logical_scenes):
             print(f"Логическая сцена {i+1}: шоты с №{scene[0]} по №{scene[-1]}")
     else:
         print("Не удалось определить логические сцены.")
-    
+
     duration = time.time() - start_time
     print(f"Время выполнения семантического анализа: {duration:.2f} секунд")
 
-    # Анализ по гистограммам 
+    # Анализ по гистограммам
     print("\n--- Анализ по цветовым гистограммам ---")
     start_time = time.time()
-    
-    hist_analyzer = HistogramSceneAnalyzer(similarity_threshold=0.7) 
-    
+
+    hist_analyzer = HistogramSceneAnalyzer(similarity_threshold=0.7)
+
     hist_probabilities = hist_analyzer.analyze_shots(shots_dir)
-    
+
     if hist_probabilities.size > 0:
         print("Вероятности продолжения сцены для каждой границы:")
         for i, prob in enumerate(hist_probabilities):
             print(f"  Граница {i+1}-{i+2}: {prob:.2f}")
     else:
         print("Не удалось получить оценки по гистограммам.")
-    
+
     duration = time.time() - start_time
     print(f"Время выполнения анализа по гистограммам: {duration:.2f} секунд")
+
+    # Определение вероятности начала новой сцены между заданными шотами (Yolo DeepSort)
+    print("\n--- Анализ шотов - Yolo и DeepSort ---")
+    start_time = time.time()
+
+    aggregator = ShotAggregator(shots_dir)
+    yolo_probabilities, _ = aggregator.process()
+
+    if yolo_probabilities.size > 0:
+        print("Вероятности продолжения сцены для каждой границы:")
+        for i, prob in enumerate(yolo_probabilities):
+            print(f"  Граница {i+1}-{i+2}: {prob:.2f}")
+    else:
+        print("Не удалось получить оценки с использованием Yolo.")
+
+    duration = time.time() - start_time
+    print(f"Время выполнения анализа с применением Yolo: {duration:.2f} секунд")
 
 
     # Здесь в будущем будут остальные этапы

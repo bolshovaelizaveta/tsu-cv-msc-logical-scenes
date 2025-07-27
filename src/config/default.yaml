@@ -1,0 +1,16 @@
+# config.yaml
+processing:
+  confidence: 0.3
+  skip_frames: 5
+  sharp_threshold: 20
+
+tracker:
+  max_age: 30
+  n_init: 1
+  nn_budget: 100
+
+similarity:
+  alpha: 0.2
+
+compare:
+  threshold: 0.7
