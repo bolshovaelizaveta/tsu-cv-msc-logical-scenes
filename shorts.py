@@ -3,8 +3,8 @@ import os
 import time
 
 from imageio_ffmpeg import get_ffmpeg_exe
-
 from VideoCutter import VideoCutter
+from semantic_analyzer import SemanticSceneAnalyzer
 
 def main():
     parser = argparse.ArgumentParser(description="Разделение видео на логически завершенные сцены")
@@ -37,6 +37,28 @@ def main():
     duration = end_time - start_time
     print(f"\nВремя выполнения нарезки: {duration:.2f} секунд")
 
+    # Семантический анализ сцен 
+    print("\n--- Семантический анализ сцен (модель CLIP) ---")
+    start_time = time.time()
+    analyzer = SemanticSceneAnalyzer()
+    logical_scenes = analyzer.analyze_shots(shots_dir)
+    
+    if logical_scenes:
+        for i, scene in enumerate(logical_scenes):
+            print(f"Логическая сцена {i+1}: шоты с №{scene[0]} по №{scene[-1]}")
+    else:
+        print("Не удалось определить логические сцены.")
+    
+    duration = time.time() - start_time
+    print(f"Время выполнения семантического анализа: {duration:.2f} секунд")
+
+
+    # Здесь в будущем будут остальные этапы
+    # Например, вызов модуля YOLO, модуля librosa и финального ансамбля...
+    # print("\n--- Анализ YOLO ---")
+    # ...
+    # print("\n--- Финальный этап: Сборка ансамбля и нарезка сцен ---")
+    # ...
 
 if __name__ == "__main__":
     main()
