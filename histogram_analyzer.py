@@ -1,4 +1,4 @@
-import os
+п»їimport os
 import cv2
 import numpy as np
 from tqdm import tqdm
@@ -6,11 +6,11 @@ from tqdm import tqdm
 class HistogramSceneAnalyzer:
     def __init__(self, similarity_threshold=0.7):
         """
-        Инициализирует анализатор на основе гистограмм
-        param similarity_threshold: порог схожести (от 0 до 1). Чем выше, тем строже сравнение
+        РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ Р°РЅР°Р»РёР·Р°С‚РѕСЂ РЅР° РѕСЃРЅРѕРІРµ РіРёСЃС‚РѕРіСЂР°РјРј
+        param similarity_threshold: РїРѕСЂРѕРі СЃС…РѕР¶РµСЃС‚Рё (РѕС‚ 0 РґРѕ 1). Р§РµРј РІС‹С€Рµ, С‚РµРј СЃС‚СЂРѕР¶Рµ СЃСЂР°РІРЅРµРЅРёРµ
         """
         self.threshold = similarity_threshold
-        print(f"Инициализация HistogramSceneAnalyzer с порогом схожести: {self.threshold}")
+        print(f"РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ HistogramSceneAnalyzer СЃ РїРѕСЂРѕРіРѕРј СЃС…РѕР¶РµСЃС‚Рё: {self.threshold}")
 
     def _get_shot_histogram(self, shot_path):
 
@@ -33,13 +33,13 @@ class HistogramSceneAnalyzer:
 
     def analyze_shots(self, shots_dir):
         """
-        Принимает папку с шотами и возвращает массив вероятностей
+        РџСЂРёРЅРёРјР°РµС‚ РїР°РїРєСѓ СЃ С€РѕС‚Р°РјРё Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃСЃРёРІ РІРµСЂРѕСЏС‚РЅРѕСЃС‚РµР№
         """
-        print("\n--- Анализ по гистограммам ---")
+        print("\n--- РђРЅР°Р»РёР· РїРѕ РіРёСЃС‚РѕРіСЂР°РјРјР°Рј ---")
         shot_histograms = {}
         shot_files = sorted([f for f in os.listdir(shots_dir) if f.endswith(".mp4")])
 
-        for filename in tqdm(shot_files, desc="Вычисление гистограмм"):
+        for filename in tqdm(shot_files, desc="Р’С‹С‡РёСЃР»РµРЅРёРµ РіРёСЃС‚РѕРіСЂР°РјРј"):
             shot_path = os.path.join(shots_dir, filename)
             shot_number = int(filename.split('-')[-1].split('.')[0])
             
@@ -50,24 +50,24 @@ class HistogramSceneAnalyzer:
         if len(shot_histograms) < 2:
             return np.array([])
 
-        print("\n--- Анализ по гистограммам: сравнение соседних шотов ---")
+        print("\n--- РђРЅР°Р»РёР· РїРѕ РіРёСЃС‚РѕРіСЂР°РјРјР°Рј: СЃСЂР°РІРЅРµРЅРёРµ СЃРѕСЃРµРґРЅРёС… С€РѕС‚РѕРІ ---")
         continuation_probabilities = []
-        # Проходим по всем границам между шотами
+        # РџСЂРѕС…РѕРґРёРј РїРѕ РІСЃРµРј РіСЂР°РЅРёС†Р°Рј РјРµР¶РґСѓ С€РѕС‚Р°РјРё
         for shot_num in range(1, len(shot_histograms)):
-            # Номера шотов начинаются с 1, а в словаре ключи тоже с 1
+            # РќРѕРјРµСЂР° С€РѕС‚РѕРІ РЅР°С‡РёРЅР°СЋС‚СЃСЏ СЃ 1, Р° РІ СЃР»РѕРІР°СЂРµ РєР»СЋС‡Рё С‚РѕР¶Рµ СЃ 1
             prev_hist = shot_histograms.get(shot_num)
             current_hist = shot_histograms.get(shot_num + 1)
             
             if prev_hist is not None and current_hist is not None:
                 similarity = cv2.compareHist(prev_hist, current_hist, cv2.HISTCMP_CORREL)
                 
-                # Приводим схожесть (от -1 до 1) к вероятности продолжения (от 0 до 1)
-                # Если similarity = 1 (полностью похожи) -> prob = 1.0
-                # Если similarity = -1 (полностью разные) -> prob = 0.0
+                # РџСЂРёРІРѕРґРёРј СЃС…РѕР¶РµСЃС‚СЊ (РѕС‚ -1 РґРѕ 1) Рє РІРµСЂРѕСЏС‚РЅРѕСЃС‚Рё РїСЂРѕРґРѕР»Р¶РµРЅРёСЏ (РѕС‚ 0 РґРѕ 1)
+                # Р•СЃР»Рё similarity = 1 (РїРѕР»РЅРѕСЃС‚СЊСЋ РїРѕС…РѕР¶Рё) -> prob = 1.0
+                # Р•СЃР»Рё similarity = -1 (РїРѕР»РЅРѕСЃС‚СЊСЋ СЂР°Р·РЅС‹Рµ) -> prob = 0.0
                 prob = (similarity + 1) / 2
                 continuation_probabilities.append(prob)
             else:
-                continuation_probabilities.append(0.5) # Если данных нет, даем нейтральную оценку
+                continuation_probabilities.append(0.5) # Р•СЃР»Рё РґР°РЅРЅС‹С… РЅРµС‚, РґР°РµРј РЅРµР№С‚СЂР°Р»СЊРЅСѓСЋ РѕС†РµРЅРєСѓ
 
         return np.array(continuation_probabilities)
 
