@@ -93,11 +93,10 @@ def main():
     print(f"Время выполнения анализа по гистограммам: {duration:.2f} секунд")
 
     # Анализ по объектам (Yolo DeepSort)
-    print("\n--- Анализ шотов - Yolo и DeepSort ---")
+print("\n--- Анализ шотов - Yolo и DeepSort ---")
     start_time = time.time()
     aggregator = ShotAggregator(shots_dir)
-    yolo_continuation_probs, _ = aggregator.process()
-    yolo_break_probs = 1.0 - yolo_continuation_probs
+    yolo_break_probs, _ = aggregator.process() 
     all_probabilities['yolo'] = yolo_break_probs
     duration = time.time() - start_time
     print(f"Время выполнения анализа с применением Yolo: {duration:.2f} секунд")
