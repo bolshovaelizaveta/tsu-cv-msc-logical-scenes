@@ -55,9 +55,7 @@ def main():
 
         shots_dir = args.shots_dir
         print(f"Используем директорию с шотами: {shots_dir}")
-        print(f"Список шотов:")
-        for f in mp4_files:
-            print(f" - {f}")
+        print(f"Количество шотов: {len(mp4_files)}")
 
     ### --------------------
     ### Анализ сцен
