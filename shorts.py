@@ -3,40 +3,65 @@ import os
 import time
 
 from imageio_ffmpeg import get_ffmpeg_exe
-from VideoCutter import VideoCutter
+from VideoCutter import VideoCutter # Нарезка
 from semantic_analyzer import SemanticSceneAnalyzer # Кластеризация + скользящее окно
 from histogram_analyzer import HistogramSceneAnalyzer # Гистограмма
 
 def main():
     parser = argparse.ArgumentParser(description="Разделение видео на логически завершенные сцены")
     parser.add_argument('--video', type=str, help= "Путь к входному файлу с видео (формат видео .mp4)")
-    parser.add_argument('--output_dir', type=str, 
-                        help='Путь к выходному каталогу для ' \
-                        'сохранения шотов (по умолчанию: ./shots_название_видео)')
+    parser.add_argument('--shots_dir', type=str, 
+                        help='Путь к каталогу с шотами, если не существует, то по умолчанию создается как: ./shots_название_видео). ' \
+                             'Если не задан --video то --shots_dir указывыет на папку с уже нарезанными шотами')
     args = parser.parse_args()
 
-    video_name = os.path.splitext(os.path.basename(args.video))[0]
-    output_dir = args.output_dir if args.output_dir else f"./shots_{video_name}"
+    # если не передано ни одного аргумента — печатаем help и выходим
+    if not args.video and not args.shots_dir:
+        parser.error("Нужно указать хотя бы один из аргументов: --video или --shots_dir, или -h для вызова help")
 
-    print(f"Входной файл: {args.video}")
-    print(f"Выходной каталог: {output_dir}")
+    # Если задано видео то идет нарезка
+    if (args.video): 
+        if not os.path.exists(args.video):
+            print(f"There is no such file or directory {args.video}")
+            return
+        
+        if not args.shots_dir:
+            shots_dir = f"./shots_{os.path.splitext(os.path.basename(args.video))[0]}"
+        else:
+            shots_dir = args.shots_dir
 
-    if not os.path.exists(args.video):
-        print(f"There is no such file or directory {args.video}")
-        return
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+        if not os.path.exists(shots_dir):
+            os.makedirs(shots_dir)
+        
+        # Нарезаем видео на шоты. Шоты сохраняются в заданную папку
+        ffmpeg_path = get_ffmpeg_exe() # необходимо для нарезки шотов
+        start_time = time.time()  # Засекаем время начала обработки
+        video_cutter = VideoCutter(args.video, shots_dir, ffmpeg_path)    
+        video_cutter.do_cutting()
+        end_time = time.time()  # Засекаем время окончания
+        duration = end_time - start_time # Выводим время выполнения в секундах с округлением
+        print(f"\nВремя выполнения нарезки: {duration:.2f} секунд")
 
-    # Нарезаем видео на шоты. Шоты сохраняются в заданную папку
-    ffmpeg_path = get_ffmpeg_exe() # необходимо для нарезки шотов
-    start_time = time.time()  # Засекаем время начала обработки
-    video_cutter = VideoCutter(args.video, output_dir, ffmpeg_path)    
-    video_cutter.do_cutting()
-    end_time = time.time()  # Засекаем время окончания
+    # Если видео не задано, то берем шоты из указанной директории
+    else:
+        if not os.path.exists(args.shots_dir):
+            print(f"There is no such directory {args.shots_dir}")
+            return
+        
+        mp4_files = [f for f in os.listdir(args.shots_dir) if f.lower().endswith('.mp4')]
+        if not mp4_files:
+            print(f"There are no .mp4 files in directory {args.shots_dir}")
+            return
 
-    # Выводим время выполнения в секундах с округлением
-    duration = end_time - start_time
-    print(f"\nВремя выполнения нарезки: {duration:.2f} секунд")
+        shots_dir = args.shots_dir
+        print(f"Используем директорию с шотами: {shots_dir}")
+        print(f"Список шотов:")
+        for f in mp4_files:
+            print(f" - {f}")
+
+    ### --------------------
+    ### Анализ сцен
+    ### --------------------
 
     # Семантический анализ сцен 
     print("\n--- Семантический анализ сцен (модель CLIP) ---")
