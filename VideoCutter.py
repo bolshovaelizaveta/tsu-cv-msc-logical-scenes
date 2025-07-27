@@ -2,10 +2,17 @@ import os
 import subprocess
 import cv2
 import copy
+import json
 
 from scenedetect import ContentDetector, AdaptiveDetector
 from scenedetect import SceneManager, StatsManager, open_video
 from scenedetect.scene_manager import write_scene_list
+
+from audio_scene_detector import detect_audio_scenes
+
+from moviepy.editor import VideoFileClip
+from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+
 
 class VideoCutter:
     shots_list = []
@@ -172,3 +179,49 @@ class VideoCutter:
         self.export_shots_to_csv()             # можно отключить (необходимо для отладки)
         self.cut_shots()
         self.export_startfinish_shots_to_jpg() # можно отключить (необходимо для отладки)
+
+
+    def detect_audio_scenes(self, frame_duration=1.0, threshold=0.02):
+        save_path = os.path.join(self.output_dir, f"{self.base_video_name}_audio_scenes.json")
+        print("Запускается аудио-анализ логических сцен...")
+        return detect_audio_scenes(self.video_path, frame_duration, threshold, save_path=save_path)
+
+
+    def cut_audio_scenes(self, json_path=None):
+        """
+        Нарезает видео по временным меткам аудиосцен из JSON-файла.
+        """
+        if not json_path:
+            json_path = os.path.join(self.output_dir, f"{self.base_video_name}_audio_scenes.json")
+
+        if not os.path.exists(json_path):
+            print(f"Файл с аудиосценами не найден: {json_path}")
+            return
+
+        # Загружаем временные метки (в секундах)
+        with open(json_path, 'r') as f:
+            scene_times = json.load(f)
+
+        if not scene_times:
+            print("Метки аудиосцен пусты.")
+            return
+
+        # Получаем длительность видео
+        video = VideoFileClip(self.video_path)
+        video_duration = video.duration
+
+        # Преобразуем метки в интервалы
+        intervals = [(0.0 if i == 0 else scene_times[i - 1], scene_times[i]) for i in range(len(scene_times))]
+        intervals.append((scene_times[-1], video_duration))
+
+        print(f"Нарезаем {len(intervals)} аудиосцен...")
+
+        for i, (start, end) in enumerate(intervals):
+            output_filename = f"{self.base_video_name}-audio-scene-{str(i + 1).zfill(3)}.mp4"
+            output_path = os.path.join(self.output_dir, output_filename)
+
+            try:
+                ffmpeg_extract_subclip(self.video_path, start, end, targetname=output_path)
+                print(f"  Сцена {i + 1}: {start:.2f}s – {end:.2f}s сохранена.")
+            except Exception as e:
+                print(f"  Ошибка при нарезке сцены {i + 1}: {e}")
