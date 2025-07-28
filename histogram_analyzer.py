@@ -97,6 +97,3 @@ class HistogramSceneAnalyzer:
                 break_probabilities.append(0.5)
 
         return np.array(break_probabilities)
-
-
-

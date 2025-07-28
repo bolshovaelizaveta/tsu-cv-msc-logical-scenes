@@ -135,7 +135,3 @@ class SemanticSceneAnalyzer:
             
         # Возвращаем массив с "оценками" для каждой границы
         return np.array(break_probabilities)
-
-
-
-

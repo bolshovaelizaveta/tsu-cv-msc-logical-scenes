@@ -11,11 +11,13 @@ from ensemble import EnsembleSceneDecider # Модуль принятия реш
 from pathlib import Path
 import sys
 
+from src.shot_aggregator import ShotAggregator
+
+
 # Добавляем корень проекта в PYTHONPATH
 root_dir = Path(__file__).parent   # папка, где лежит example_yolo_deepsort.py
 sys.path.append(str(root_dir))
 
-from src.shot_aggregator import ShotAggregator
 
 def main():
     parser = argparse.ArgumentParser(description="Разделение видео на логически завершенные сцены")
@@ -23,6 +25,8 @@ def main():
     parser.add_argument('--shots_dir', type=str, 
                         help='Путь к каталогу с шотами, если не существует, то по умолчанию создается как: ./shots_название_видео). ' \
                              'Если не задан --video то --shots_dir указывыет на папку с уже нарезанными шотами')
+    parser.add_argument('--audio_only', action='store_true', help="Выполнить только аудио-анализ и нарезку")
+    parser.add_argument('--output_dir', type=str, help="Путь к выходному каталогу для сохранения сцен")
     args = parser.parse_args()
 
     # если не передано ни одного аргумента — печатаем help и выходим
@@ -34,9 +38,25 @@ def main():
         if not os.path.exists(args.video):
             print(f"There is no such file or directory {args.video}")
             return
-        
+
+        # Проверка: если выбрана только аудио-сегментация
+        if args.audio_only:
+            ffmpeg_path = get_ffmpeg_exe()
+            output_dir = f"./audio_scenes_{os.path.splitext(os.path.basename(args.video))[0]}"
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+
+            video_cutter = VideoCutter(args.video, output_dir, ffmpeg_path)
+            start_time = time.time()
+            video_cutter.detect_audio_scenes()
+            video_cutter.cut_audio_scenes()
+            duration = time.time() - start_time
+            print(f"\nАудио-сегментация завершена за {duration:.2f} секунд")
+            return
+
         if not args.shots_dir:
             shots_dir = f"./shots_{os.path.splitext(os.path.basename(args.video))[0]}"
+
         else:
             shots_dir = args.shots_dir
 
