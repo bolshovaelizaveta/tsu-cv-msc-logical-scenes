@@ -4,6 +4,7 @@ import json
 from moviepy.editor import VideoFileClip
 import os
 
+
 def detect_audio_scenes(video_path, frame_duration=1.0, threshold=0.1, save_path=None):
     print(f"Analyzing audio from: {video_path}")
 

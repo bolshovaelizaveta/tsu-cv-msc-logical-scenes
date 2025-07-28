@@ -10,11 +10,13 @@ from histogram_analyzer import HistogramSceneAnalyzer # Гистограмма
 from pathlib import Path
 import sys
 
+from src.shot_aggregator import ShotAggregator
+
+
 # Добавляем корень проекта в PYTHONPATH
 root_dir = Path(__file__).parent   # папка, где лежит example_yolo_deepsort.py
 sys.path.append(str(root_dir))
 
-from src.shot_aggregator import ShotAggregator
 
 def main():
     parser = argparse.ArgumentParser(description="Разделение видео на логически завершенные сцены")
