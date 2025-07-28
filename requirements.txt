@@ -31,3 +31,4 @@ tqdm==4.67.1
 transformers
 tzdata==2025.2
 ultralytics==8.3.168
+PySoundFile
