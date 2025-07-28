@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  video-segmentation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kion-video-segmentation-ensemble
+    
+    # GPU поддержка (требует nvidia-docker)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    
+    # Увеличенные лимиты ресурсов для ансамбля из 3 экспертов
+    mem_limit: 32g
+    cpus: 32
+    
+    # Монтирование директорий для данных
+    volumes:
+      - ./data:/data
+      - ./video:/app/video
+      - ./output:/app/output
+      - ./src:/app/src
+      - ./result:/app/result  # Для JSON результатов и графиков
+    
+    # Переменные окружения
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTHONPATH=/app
+      - YOLO_VERBOSE=False  # Отключаем verbose вывод YOLO
+    
+    # Рабочая директория
+    working_dir: /app
+    
+    # Команда по умолчанию (обновлена под новый API)
+    command: ["--video", "/data/input.mp4", "--shots_dir", "/data/output"]
+    
+    # Перезапуск только при сбое
+    restart: "no"

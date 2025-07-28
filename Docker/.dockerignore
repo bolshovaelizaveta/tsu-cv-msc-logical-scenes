@@ -1,0 +1,57 @@
+# Git файлы
+.git
+.gitignore
+
+# Документация
+README.md
+*.md
+
+# Python кэш и виртуальные окружения
+__pycache__/
+.venv/
+.venv
+*.pyc
+*.pyo
+*.pyd
+
+# Временные файлы обработки
+shots_*/
+output/
+result/
+
+# Большие видеофайлы (исключаем из сборки, монтируем через volumes)
+*.mp4
+*.avi
+*.mov
+*.mkv
+!video/*.mp4
+
+# YOLO модели (будут загружены автоматически при первом запуске)
+*.pt
+*.weights
+!yolov8n-seg.pt
+
+# Результаты обработки
+*.json
+!mockup_labeled_data.json
+!video/manual_labeled_data.json
+
+# Графики и изображения результатов
+*.png
+*.jpg
+*.jpeg
+!*.jpg  # Но включаем ключевые кадры
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# IDE файлы
+.vscode/
+.idea/
+.vs/
+*.swp
+*.swo
+
+# Логи
+*.log
