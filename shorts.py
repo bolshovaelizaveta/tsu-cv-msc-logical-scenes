@@ -6,6 +6,7 @@ from imageio_ffmpeg import get_ffmpeg_exe
 from VideoCutter import VideoCutter # Нарезка
 from semantic_analyzer import SemanticSceneAnalyzer # Кластеризация + скользящее окно
 from histogram_analyzer import HistogramSceneAnalyzer # Гистограмма
+from ensemble import EnsembleSceneDecider # Модуль принятия решений
 
 from pathlib import Path
 import sys
@@ -87,66 +88,61 @@ def main():
         print(f"Количество шотов: {len(mp4_files)}")
 
     ### --------------------
-    ### Анализ сцен
+    ### Запуск всех "экспертов" и сбор результатов
     ### --------------------
+
+    all_probabilities = {}
+    num_shots = len([f for f in os.listdir(shots_dir) if f.endswith(".mp4")])
 
     # Семантический анализ сцен
     print("\n--- Семантический анализ сцен (модель CLIP) ---")
     start_time = time.time()
     analyzer = SemanticSceneAnalyzer()
-    logical_scenes = analyzer.analyze_shots(shots_dir)
-
-    if logical_scenes:
-        for i, scene in enumerate(logical_scenes):
-            print(f"Логическая сцена {i+1}: шоты с №{scene[0]} по №{scene[-1]}")
-    else:
-        print("Не удалось определить логические сцены.")
-
+    semantic_probs = analyzer.analyze_shots(shots_dir)
+    all_probabilities['semantic'] = semantic_probs
     duration = time.time() - start_time
     print(f"Время выполнения семантического анализа: {duration:.2f} секунд")
 
     # Анализ по гистограммам
     print("\n--- Анализ по цветовым гистограммам ---")
     start_time = time.time()
-
-    hist_analyzer = HistogramSceneAnalyzer(similarity_threshold=0.7)
-
-    hist_probabilities = hist_analyzer.analyze_shots(shots_dir)
-
-    if hist_probabilities.size > 0:
-        print("Вероятности продолжения сцены для каждой границы:")
-        for i, prob in enumerate(hist_probabilities):
-            print(f"  Граница {i+1}-{i+2}: {prob:.2f}")
-    else:
-        print("Не удалось получить оценки по гистограммам.")
-
+    hist_analyzer = HistogramSceneAnalyzer() 
+    hist_probs = hist_analyzer.analyze_shots(shots_dir)
+    all_probabilities['histogram'] = hist_probs
     duration = time.time() - start_time
     print(f"Время выполнения анализа по гистограммам: {duration:.2f} секунд")
 
-    # Определение вероятности начала новой сцены между заданными шотами (Yolo DeepSort)
-    print("\n--- Анализ шотов - Yolo и DeepSort ---")
+    # Анализ по объектам (Yolo DeepSort)
+print("\n--- Анализ шотов - Yolo и DeepSort ---")
     start_time = time.time()
-
     aggregator = ShotAggregator(shots_dir)
-    yolo_probabilities, _ = aggregator.process()
-
-    if yolo_probabilities.size > 0:
-        print("Вероятности продолжения сцены для каждой границы:")
-        for i, prob in enumerate(yolo_probabilities):
-            print(f"  Граница {i+1}-{i+2}: {prob:.2f}")
-    else:
-        print("Не удалось получить оценки с использованием Yolo.")
-
+    yolo_break_probs, _ = aggregator.process() 
+    all_probabilities['yolo'] = yolo_break_probs
     duration = time.time() - start_time
     print(f"Время выполнения анализа с применением Yolo: {duration:.2f} секунд")
 
+    print("--- Принятие решения ансамблем ---")
+    
+    # Определяем наши веса 
+    expert_weights = {
+        'yolo': 3.0,        # Очень надежный эксперт
+        'semantic': 2.5,    # Очень надежный эксперт
+        'histogram': 0.5    # Вспомогательный
+        # 'audio': 1.5,     # Вспомогательный
+    }
+    decision_threshold = 0.6 # Порог 60% уверенности в разрыве
 
-    # Здесь в будущем будут остальные этапы
-    # Например, вызов модуля YOLO, модуля librosa и финального ансамбля...
-    # print("\n--- Анализ YOLO ---")
-    # ...
-    # print("\n--- Финальный этап: Сборка ансамбля и нарезка сцен ---")
-    # ...
+    # Создаем и запускаем наш модуль принятия решений
+    decider = EnsembleSceneDecider(weights=expert_weights, decision_threshold=decision_threshold)
+    final_scenes = decider.decide_boundaries(all_probabilities, num_shots)
+
+    # Результат
+    print("\n--- Итоговые логические сцены, найденные ансамблем ---")
+    if final_scenes:
+        for i, scene in enumerate(final_scenes):
+            print(f"Финальная сцена {i+1}: шоты с №{scene[0]} по №{scene[-1]}")
+    else:
+        print("Ансамблю не удалось определить финальные сцены.")
 
 if __name__ == "__main__":
     main()
