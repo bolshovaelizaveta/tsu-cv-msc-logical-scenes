@@ -1,3 +1,11 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/Hugging_Face-Transformers-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face Transformers">
+  <img src="https://img.shields.io/badge/YOLOv8-ultralytics-007FFF?style=for-the-badge" alt="YOLOv8">
+</p>
+
 # Сквозная идентификация объектов и сегментация видеоконтента на логические сцены
 
 ### ТГУ | Магистратура "Компьютерное зрение и нейронные сети" | 2025
@@ -13,7 +21,7 @@
 | *Большова Елизавета* | Тимлид, архитектура пайплайна, разработка ансамбля. |
 | *Клименкова Инесса* | Разработка цветового анализа (`HistogramSceneAnalyzer`). |
 | *Родина Екатерина* | Разработка и реализация системы метрик (`metric_calculator`), разработка модуля нарезки (VideoCutter), подготовка данных. |
-| *Синюшкин Алексей* | Разработка модуля анализа видеоряда (`SemanticSceneAnalyzer`), исследование методов сравнения эмбеддингов. |
+| *Синюшкин Алексей* | Разработка модуля анализа видеоряда (`SemanticSceneAnalyzer`). |
 | *Токаревский Святослав* | Исследование архитектурных подходов и реализация Docker-контейнеризации проекта. |
 | *Халитова Яна* | Разработка модуля аудио-анализа (`Librosa`). |
 | *Шайдуров Даниил* | Разработка модуля трекинга объектов (`YOLO`, `DeepSORT`). |
