@@ -1,12 +1,16 @@
 import argparse
 import os
 import time
+import numpy as np
 
 from imageio_ffmpeg import get_ffmpeg_exe
 from VideoCutter import VideoCutter # Нарезка
 from semantic_analyzer import SemanticSceneAnalyzer # Кластеризация + скользящее окно
 from histogram_analyzer import HistogramSceneAnalyzer # Гистограмма
 from ensemble import EnsembleSceneDecider # Модуль принятия решений
+from metric_calculator import calculate_all_metrics # Метрики
+from utils import read_labeled_data_from_json, convert_scenes_to_dict
+from audio_analyzer import AudioSceneAnalyzer # Анализатор аудио
 
 from pathlib import Path
 import sys
@@ -27,17 +31,31 @@ def main():
                              'Если не задан --video то --shots_dir указывыет на папку с уже нарезанными шотами')
     parser.add_argument('--audio_only', action='store_true', help="Выполнить только аудио-анализ и нарезку")
     parser.add_argument('--output_dir', type=str, help="Путь к выходному каталогу для сохранения сцен")
-    args = parser.parse_args()
-
+    # Добавляем аргументы для метрик, чтобы сделать их опциональными
+    parser.add_argument('--evaluate', action='store_true', help="Включить оценку по метрикам после анализа")
+    parser.add_argument('--manual_labels_path', type=str, help='Путь к JSON файлу с ручной разметкой')
+    
     # если не передано ни одного аргумента — печатаем help и выходим
+    args = parser.parse_args()
     if not args.video and not args.shots_dir:
-        parser.error("Нужно указать хотя бы один из аргументов: --video или --shots_dir, или -h для вызова help")
+        parser.error("Нужно указать --video или --shots_dir.")
 
-    # Если задано видео то идет нарезка
-    if (args.video): 
+    # Инициализируем переменные, которые нам понадобятся
+    shots_dir = None
+    shots_list = []
+    video_filename = ""
+
+    # Нарезка на шоты
+    if args.video:
+        video_filename = os.path.basename(args.video)
         if not os.path.exists(args.video):
-            print(f"There is no such file or directory {args.video}")
+            print(f"Такого файла или каталога не существует {args.video}")
             return
+
+        # Если путь к шотам не указан, генерируем его по имени видео
+        if not shots_dir:
+            shots_dir = f"./shots_{os.path.splitext(video_filename)[0]}"
+        os.makedirs(shots_dir, exist_ok=True)
 
         # Проверка: если выбрана только аудио-сегментация
         if args.audio_only:
@@ -53,42 +71,31 @@ def main():
             duration = time.time() - start_time
             print(f"\nАудио-сегментация завершена за {duration:.2f} секунд")
             return
-
-        if not args.shots_dir:
-            shots_dir = f"./shots_{os.path.splitext(os.path.basename(args.video))[0]}"
-
+            
+        # Создаем VideoCutter и получаем shots_list
+        print(f"Нарезка/проверка шотов для видео '{args.video}' в папке '{shots_dir}'...")
+        video_cutter = VideoCutter(args.video, shots_dir, get_ffmpeg_exe())
+        
+        if any(f.endswith('.mp4') for f in os.listdir(shots_dir)):
+            print(f"Папка с шотами уже существует. Восстанавливаем информацию о сценах.")
+            video_cutter.detect_shots() # Этот метод заполнит shots_list
         else:
-            shots_dir = args.shots_dir
-
-        if not os.path.exists(shots_dir):
-            os.makedirs(shots_dir)
+            video_cutter.do_cutting()
         
-        # Нарезаем видео на шоты. Шоты сохраняются в заданную папку
-        ffmpeg_path = get_ffmpeg_exe() # необходимо для нарезки шотов
-        start_time = time.time()  # Засекаем время начала обработки
-        video_cutter = VideoCutter(args.video, shots_dir, ffmpeg_path)    
-        video_cutter.do_cutting()
-        end_time = time.time()  # Засекаем время окончания
-        duration = end_time - start_time # Выводим время выполнения в секундах с округлением
-        print(f"\nВремя выполнения нарезки: {duration:.2f} секунд")
-
-    # Если видео не задано, то берем шоты из указанной директории
-    else:
-        if not os.path.exists(args.shots_dir):
-            print(f"There is no such directory {args.shots_dir}")
-            return
-        
-        mp4_files = [f for f in os.listdir(args.shots_dir) if f.lower().endswith('.mp4')]
-        if not mp4_files:
-            print(f"There are no .mp4 files in directory {args.shots_dir}")
-            return
-
+        shots_list = video_cutter.get_shots() # Теперь shots_list будет создан в любом случае
+    
+    elif args.shots_dir:
         shots_dir = args.shots_dir
-        print(f"Используем директорию с шотами: {shots_dir}")
-        print(f"Количество шотов: {len(mp4_files)}")
+        if not os.path.exists(shots_dir):
+            print(f"Ошибка: Папка с шотами не найдена {shots_dir}"); return
+        print(f"Используем готовые шоты из папки: {shots_dir}")
+        
+    # Если нет видео и берем готовые шоты из папки - аудио-анализ будет пропущен
+    num_shots = len([f for f in os.listdir(shots_dir) if f.lower().endswith('.mp4')])
+    if num_shots < 2: print("Недостаточно шотов для анализа."); return
 
     ### --------------------
-    ### Запуск всех "экспертов" и сбор результатов
+    ### Запуск и сбор результатов
     ### --------------------
 
     all_probabilities = {}
@@ -113,7 +120,7 @@ def main():
     print(f"Время выполнения анализа по гистограммам: {duration:.2f} секунд")
 
     # Анализ по объектам (Yolo DeepSort)
-print("\n--- Анализ шотов - Yolo и DeepSort ---")
+    print("\n--- Анализ шотов - Yolo и DeepSort ---")
     start_time = time.time()
     aggregator = ShotAggregator(shots_dir)
     yolo_break_probs, _ = aggregator.process() 
@@ -121,15 +128,30 @@ print("\n--- Анализ шотов - Yolo и DeepSort ---")
     duration = time.time() - start_time
     print(f"Время выполнения анализа с применением Yolo: {duration:.2f} секунд")
 
-    print("--- Принятие решения ансамблем ---")
+    # Анализ по аудио
+    # Запускаем аудио-анализ, только если есть все нужные данные, если нет - пропускаем
+    if args.video and shots_list:
+        print("\n--- Анализ аудиодорожки ---")
+        start_time = time.time()
+        audio_analyzer = AudioSceneAnalyzer(video_path=args.video, shots_list=shots_list)
+        audio_probs = audio_analyzer.analyze_shots()
+        all_probabilities['audio'] = audio_probs
+        duration = time.time() - start_time
+        print(f"Время выполнения аудио-анализа: {duration:.2f} секунд")
+    else:
+        print("\n--- Анализ аудиодорожки пропущен (не был предоставлен --video или не удалось получить список шотов) ---")
     
     # Определяем наши веса 
     expert_weights = {
         'yolo': 3.0,        # Очень надежный эксперт
         'semantic': 2.5,    # Очень надежный эксперт
         'histogram': 0.5    # Вспомогательный
-        # 'audio': 1.5,     # Вспомогательный
     }
+
+    # Добавляем вес для аудио, только если оно отработало
+    if 'audio' in all_probabilities:
+        expert_weights['audio'] = 1.5
+
     decision_threshold = 0.6 # Порог 60% уверенности в разрыве
 
     # Создаем и запускаем наш модуль принятия решений
@@ -143,6 +165,33 @@ print("\n--- Анализ шотов - Yolo и DeepSort ---")
             print(f"Финальная сцена {i+1}: шоты с №{scene[0]} по №{scene[-1]}")
     else:
         print("Ансамблю не удалось определить финальные сцены.")
+
+    # Оценка по метрикам
+    if args.evaluate:
+        # Теперь все строки ниже имеют ОДИН уровень отступа
+        if not args.manual_labels_path:
+            print("\nОшибка: для оценки по метрикам необходимо указать путь к файлу с разметкой через --manual_labels_path.")
+        elif not os.path.exists(args.manual_labels_path):
+            print(f"\nОшибка: файл с разметкой не найден: {args.manual_labels_path}")
+        else:
+            print("\n\n=======================================================")
+            print("--- ОЦЕНКА КАЧЕСТВА РЕЗУЛЬТАТОВ АНСАМБЛЯ ---")
+            print("=======================================================")
+            all_manual_labels = read_labeled_data_from_json(args.manual_labels_path)
+            true_scenes_data = next((item for item in all_manual_labels if item["file_name"] == video_filename), None)
+            
+            if true_scenes_data:
+                true_scenes_dict = true_scenes_data["scenes"]
+                pred_scenes_dict = convert_scenes_to_dict(final_scenes)
+                
+                bounds_metric, iou_metric = calculate_all_metrics(true_scenes=true_scenes_dict, pred_scenes=pred_scenes_dict)
+                
+                print(f"\n--- Метрики по границам сцен ---")
+                print(f"Точность (Precision): {bounds_metric['precision']:.3f}")
+                print(f"Полнота (Recall):    {bounds_metric['recall']:.3f}")
+                print(f"F1-мера (баланс):   {bounds_metric['f1']:.3f}")
+            else:
+                print(f"\nНе найдена ручная разметка для видео '{video_filename}' в файле {args.manual_labels_path}.")
 
 if __name__ == "__main__":
     main()
