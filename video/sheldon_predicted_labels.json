@@ -1,0 +1,8 @@
+{
+    "file_name": "sheldon.mp4",
+    "scenes": {
+        "scene_1": [1, 23],
+        "scene_2": [24, 31],
+        "scene_3": [32, 36]
+    }
+}

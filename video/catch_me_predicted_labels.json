@@ -1,0 +1,13 @@
+{
+    "file_name": "catch_me.mp4",
+    "scenes": {
+        "scene_1": [1, 7],
+        "scene_2": [8, 16],
+        "scene_3": [17, 20],
+        "scene_4": [21, 22],
+        "scene_5": [23, 27],
+        "scene_6": [28, 30],
+        "scene_7": [31, 31],
+        "scene_8": [32, 33]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "file_name": "three_heroes.mp4",
+    "scenes": {
+        "scene_1": [1, 16],
+        "scene_2": [17, 32]
+    }
+}
