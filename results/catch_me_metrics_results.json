@@ -1,0 +1,24 @@
+{
+    "bounds_metric": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.857
+    },
+    "iou_metric": {
+        "iou": {
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.857
+        },
+        "iom": {
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.857
+        },
+        "ioa": {
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.857
+        }
+    }
+}
